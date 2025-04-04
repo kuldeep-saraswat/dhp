@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tag Popularity Over the Years</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* General Page Styling */
+        body {
+            font-family: "Poppins", sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 20px;
+            background: #f5f5f5;
+            color: #333;
+        }
+
+        h1 {
+            font-size: 28px;
+            margin-bottom: 20px;
+            color: #222;
+        }
+
+        /* Chart Container Styling */
+        #chart-container {
+            width: 90%;
+            max-width: 1100px;
+            margin: auto;
+            background: #ffffff;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease-in-out;
+        }
+
+        #chart-container:hover {
+            transform: scale(1.02);
+        }
+
+        canvas {
+            min-height: 500px !important;
+            max-height: 700px !important;
+        }
+    </style>
+</head>
+<body>
+    <h1>📊 Tag Popularity Over the Years</h1>
+    <div id="chart-container">
+        <canvas id="tagChart"></canvas>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            fetch("http://127.0.0.1:5000/api/chart-data")
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        alert("Error fetching data: " + data.error);
+                        return;
+                    }
+
+                    const ctx = document.getElementById("tagChart").getContext("2d");
+
+                    new Chart(ctx, {
+                        type: "line",
+                        data: {
+                            labels: data.years,
+                            datasets: data.datasets.map(dataset => ({
+                                ...dataset,
+                                borderWidth: 3,
+                                tension: 0.4,
+                                pointRadius: 5,
+                                pointHoverRadius: 8,
+                                backgroundColor: "rgba(0, 123, 255, 0.1)",
+                                borderColor: dataset.borderColor || getRandomColor(),
+                                hoverBorderColor: "#007bff"
+                            }))
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: {
+                                    labels: {
+                                        color: "#333",
+                                        font: {
+                                            size: 14,
+                                            weight: "bold"
+                                        }
+                                    }
+                                },
+                                title: {
+                                    display: true,
+                                    text: "Top 10 Tags Over the Years",
+                                    font: { size: 18, weight: "bold" },
+                                    color: "#222"
+                                }
+                            },
+                            scales: {
+                                x: {
+                                    title: {
+                                        display: true,
+                                        text: "Year",
+                                        color: "#444",
+                                        font: { size: 14, weight: "bold" }
+                                    },
+                                    ticks: { color: "#666" }
+                                },
+                                y: {
+                                    title: {
+                                        display: true,
+                                        text: "Question Count",
+                                        color: "#444",
+                                        font: { size: 14, weight: "bold" }
+                                    },
+                                    beginAtZero: true,
+                                    ticks: { color: "#666" }
+                                }
+                            }
+                        }
+                    });
+
+                    function getRandomColor() {
+                        const colors = ["#ff6384", "#36a2eb", "#ffce56", "#4bc0c0", "#9966ff", "#ff9f40"];
+                        return colors[Math.floor(Math.random() * colors.length)];
+                    }
+                })
+                .catch(error => {
+                    console.error("Error loading chart data:", error);
+                    alert("Failed to load data. Please try again.");
+                });
+        });
+    </script>
+</body>
+</html>
